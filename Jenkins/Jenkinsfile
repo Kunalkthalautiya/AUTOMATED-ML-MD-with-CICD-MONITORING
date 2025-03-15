@@ -1,29 +1,27 @@
 pipeline {
     agent any
+
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Kunalkthalautiya/AUTOMATED-ML-MD-with-CICD-MONITORING.git'
+                git url : "https://github.com/Kunalkthalautiya/AUTOMATED-ML-MD-with-CICD-MONITORING.git", branch : "main"
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ml_model .'
+        stage("Build"){
+            steps{
+                sh " docker build -t ml_model ."
             }
         }
-        stage('Push Docker Image') {
-            steps {
-                withDockerRegistry([credentialsId: 'docker-hub', url: '']) {
-                    sh 'docker tag ml_model your-dockerhub/ml_model:latest'
-                    sh 'docker push your-dockerhub/ml_model:latest'
-                }
+        stage("Test"){
+            steps{
+                echo "No Error"
             }
         }
-        stage('Deploy to Server') {
-            steps {
-                sshagent(['your-ec2-key']) {
-                    sh 'ssh ubuntu@your-ec2-ip "docker pull your-dockerhub/ml_model:latest && docker run -d -p 5000:5000 ml_model"'
-                }
+        stage("deploy"){
+            steps{
+                sh "docker stop ml_model || true"
+                sh "docker rm ml_model || true"
+                sh " docker run -d -p 5000:5000 --name ml_model ml_model:latest"
             }
         }
     }
